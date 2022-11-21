@@ -1,0 +1,1032 @@
+//gioco del tris
+//a1 b1 c1
+//a2 b2 c2
+//a3 b3 c3
+//test
+//  x | o | x 
+// -----------
+//    |   |
+// -----------
+//  x |   | o
+//uso 0x1 per player 1
+//uso 0x2 per player 2
+//facendo le and su righe e colonne se 0 -> no win
+//se != 0 -> winner in base a cosa esce 0x1 o 0x2
+.main
+    .var
+        a1
+        a2
+        a3
+        b1
+        b2
+        b3
+        c1
+        c2
+        c3
+        libere
+        turno
+        x_pl1
+        y_pl1
+        x_pl2
+        y_pl2
+    .end-var
+
+    INVOKEVIRTUAL hello_player
+
+
+azzera:
+    BIPUSH 0x0
+    ISTORE a1
+    BIPUSH 0x0
+    ISTORE a2
+    BIPUSH 0x0
+    ISTORE a3
+    BIPUSH 0x0
+    ISTORE b1
+    BIPUSH 0x0
+    ISTORE b2
+    BIPUSH 0x0
+    ISTORE b3
+    BIPUSH 0x0
+    ISTORE c1
+    BIPUSH 0x0
+    ISTORE c2
+    BIPUSH 0x0
+    ISTORE c3
+    BIPUSH 0x9
+    ISTORE libere
+    BIPUSH 0x1
+    ISTORE turno
+    BIPUSH 0x2
+    ISTORE x_pl1
+    BIPUSH 0x2
+    ISTORE y_pl1
+    BIPUSH 0x2
+    ISTORE x_pl2
+    BIPUSH 0x2
+    ISTORE y_pl2
+
+loop:
+    //aggiorno il turno
+    ///TODO: aggiorna il turno solo quando inserisce il segno
+    ILOAD turno
+    BIPUSH 0x1
+    IF_ICMPEQ turno2
+        BIPUSH 0x1
+        ISTORE turno
+        GOTO stampa_ui
+    turno2:
+        BIPUSH 0x2
+        ISTORE turno
+    //stampo ui
+    stampa_ui:
+        //prima stampo di chi è il turno
+        ILOAD turno
+        INVOKEVIRTUAL print_round
+        //stampo l'ui effettiva
+        ILOAD turno
+        BIPUSH 0x1
+        IF_ICMPEQ ui_pl1
+        ui_pl2:
+            ILOAD y_pl2
+            BIPUSH 0X0
+            INVOKEVIRTUAL print_row_arrow
+            ILOAD a1
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD a2
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD a3
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x0A
+            OUT
+            INVOKEVIRTUAL print_line
+            ILOAD y_pl2
+            BIPUSH 0X1
+            INVOKEVIRTUAL print_row_arrow
+            ILOAD b1
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD b2
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD b3
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x0A
+            OUT
+            INVOKEVIRTUAL print_line
+            ILOAD y_pl2
+            BIPUSH 0X2
+            INVOKEVIRTUAL print_row_arrow
+            ILOAD c1
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD c2
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD c3
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x0A
+            OUT
+            ILOAD x_pl2
+            INVOKEVIRTUAL print_col_arrow
+            GOTO muovi_player
+        ui_pl1:
+            ILOAD y_pl1
+            BIPUSH 0X0
+            INVOKEVIRTUAL print_row_arrow
+            ILOAD a1
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD a2
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD a3
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x0A
+            OUT
+            INVOKEVIRTUAL print_line
+            ILOAD y_pl1
+            BIPUSH 0X1
+            INVOKEVIRTUAL print_row_arrow
+            ILOAD b1
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD b2
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD b3
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x0A
+            OUT
+            INVOKEVIRTUAL print_line
+            ILOAD y_pl1
+            BIPUSH 0X2
+            INVOKEVIRTUAL print_row_arrow
+            ILOAD c1
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD c2
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x7C
+            OUT
+            ILOAD c3
+            INVOKEVIRTUAL print_placeholder
+            BIPUSH 0x0A
+            OUT
+            ILOAD x_pl1
+            INVOKEVIRTUAL print_col_arrow
+        
+    muovi_player:
+    //prendo input e valido/ciclo
+    IN
+    DUP
+    BIPUSH 0x0
+    IF_ICMPEQ no_in //valido l'input
+    DUP
+    BIPUSH 0x77 //w
+    IF_ICMPEQ vai_su
+    DUP
+    BIPUSH 0x61 //a
+    IF_ICMPEQ vai_sx
+    DUP
+    BIPUSH 0x73 //s
+    IF_ICMPEQ vai_giu
+    DUP
+    BIPUSH 0x64//d
+    IF_ICMPEQ vai_dx
+    //no dup perchè se non è nemmeno questo -> carattere non valido
+    BIPUSH 0x70 //p
+    IF_ICMPEQ place_mark
+    //se arriva qui input non valido (messaggio errore?)
+    GOTO muovi_player
+    
+    vai_su:
+        ILOAD turno
+        BIPUSH 0x1
+        IF_ICMPEQ tplayer1_su
+        //altrimenti tplayer2
+            ILOAD y_pl2
+            BIPUSH 0x0
+            IF_ICMPEQ stampa_ui
+            IINC y_pl2 -1
+            GOTO stampa_ui
+        tplayer1_su:
+            ILOAD y_pl1
+            BIPUSH 0x0
+            IF_ICMPEQ stampa_ui
+            IINC y_pl1 -1
+            GOTO stampa_ui
+        GOTO controlla_fine
+    vai_giu:
+        ILOAD turno
+        BIPUSH 0x1
+        IF_ICMPEQ tplayer1_giu
+        //altrimenti tplayer2
+            ILOAD y_pl2
+            BIPUSH 0x2
+            IF_ICMPEQ stampa_ui
+            IINC y_pl2 1
+            GOTO stampa_ui
+        tplayer1_giu:
+            ILOAD y_pl1
+            BIPUSH 0x2
+            IF_ICMPEQ stampa_ui
+            IINC y_pl1 1
+            GOTO stampa_ui
+        GOTO controlla_fine
+    vai_sx:
+        ILOAD turno
+        BIPUSH 0x1
+        IF_ICMPEQ tplayer1_sx
+        //altrimenti tplayer2
+            ILOAD x_pl2
+            BIPUSH 0x0
+            IF_ICMPEQ stampa_ui
+            IINC x_pl2 -1
+            GOTO stampa_ui
+        tplayer1_sx:
+            ILOAD x_pl1
+            BIPUSH 0x0
+            IF_ICMPEQ stampa_ui
+            IINC x_pl1 -1
+            GOTO stampa_ui
+        GOTO controlla_fine
+    vai_dx:
+        ILOAD turno
+        BIPUSH 0x1
+        IF_ICMPEQ tplayer1_dx
+        //altrimenti tplayer2
+            ILOAD x_pl2
+            BIPUSH 0x2
+            IF_ICMPEQ stampa_ui
+            IINC x_pl2 1
+            GOTO stampa_ui
+        tplayer1_dx:
+            ILOAD x_pl1
+            BIPUSH 0x2
+            IF_ICMPEQ stampa_ui
+            IINC x_pl1 1
+            GOTO stampa_ui
+        GOTO controlla_fine
+    place_mark:
+        ILOAD turno
+        BIPUSH 0x1
+        IF_ICMPEQ tplayer1_place
+        //tplayer2
+            ILOAD y_pl2
+            DUP
+            IFEQ row_a_pl2
+            BIPUSH 0x1
+            IF_ICMPEQ row_b_pl2
+            row_c_pl2:
+                ILOAD x_pl2
+                DUP
+                IFEQ rc_c1_pl2
+                BIPUSH 0x1
+                IF_ICMPEQ rc_c2_pl2
+                rc_c3_pl2:
+                    ILOAD c3
+                    IFEQ is_free_rc_c3_pl2
+                    GOTO stampa_ui
+                    is_free_rc_c3_pl2:
+                        BIPUSH 0x2
+                        ISTORE c3
+                        GOTO controlla_fine
+                rc_c2_pl2:
+                    POP
+                    ILOAD c2
+                    IFEQ is_free_rc_c2_pl2
+                    GOTO stampa_ui
+                    is_free_rc_c2_pl2:
+                        BIPUSH 0x2
+                        ISTORE c2
+                        GOTO controlla_fine
+                rc_c1_pl2:
+                    POP
+                    ILOAD c1
+                    IFEQ is_free_rc_c1_pl2
+                    GOTO stampa_ui
+                    is_free_rc_c1_pl2:
+                        BIPUSH 0x2
+                        ISTORE c1
+                        GOTO controlla_fine
+            row_b_pl2:
+                POP
+                ILOAD x_pl2
+                DUP
+                IFEQ rc_b1_pl2
+                BIPUSH 0x1
+                IF_ICMPEQ rc_b2_pl2
+                rc_b3_pl2:
+                    ILOAD b3
+                    IFEQ is_free_rc_b3_pl2
+                    GOTO stampa_ui
+                    is_free_rc_b3_pl2:
+                        BIPUSH 0x2
+                        ISTORE b3
+                        GOTO controlla_fine
+                rc_b2_pl2:
+                    POP
+                    ILOAD b2
+                    IFEQ is_free_rc_b2_pl2
+                    GOTO stampa_ui
+                    is_free_rc_b2_pl2:
+                        BIPUSH 0x2
+                        ISTORE b2
+                        GOTO controlla_fine
+                rc_b1_pl2:
+                    POP
+                    ILOAD b1
+                    IFEQ is_free_rc_b1_pl2
+                    GOTO stampa_ui
+                    is_free_rc_b1_pl2:
+                        BIPUSH 0x2
+                        ISTORE b1
+                        GOTO controlla_fine
+            row_a_pl2:
+                POP
+                ILOAD x_pl2
+                DUP
+                IFEQ rc_a1_pl2
+                BIPUSH 0x1
+                IF_ICMPEQ rc_a2_pl2
+                rc_a3_pl2:
+                    ILOAD a3
+                    IFEQ is_free_rc_a3_pl2
+                    GOTO stampa_ui
+                    is_free_rc_a3_pl2:
+                        BIPUSH 0x2
+                        ISTORE a3
+                        GOTO controlla_fine
+                rc_a2_pl2:
+                    POP
+                    ILOAD a2
+                    IFEQ is_free_rc_a2_pl2
+                    GOTO stampa_ui
+                    is_free_rc_a2_pl2:
+                        BIPUSH 0x2
+                        ISTORE a2
+                        GOTO controlla_fine
+                rc_a1_pl2:
+                    POP
+                    ILOAD a1
+                    IFEQ is_free_rc_a1_pl2
+                    GOTO stampa_ui
+                    is_free_rc_a1_pl2:
+                        BIPUSH 0x2
+                        ISTORE a1
+                        GOTO controlla_fine
+            //prima devo controllare se è libero
+        tplayer1_place:
+            ILOAD y_pl1
+            DUP
+            IFEQ row_a_pl1
+            BIPUSH 0x1
+            IF_ICMPEQ row_b_pl1
+            row_c_pl1:
+                ILOAD x_pl1
+                DUP
+                IFEQ rc_c1_pl1
+                BIPUSH 0x1
+                IF_ICMPEQ rc_c2_pl1
+                rc_c3_pl1:
+                    ILOAD c3
+                    IFEQ is_free_rc_c3_pl1
+                    GOTO stampa_ui
+                    is_free_rc_c3_pl1:
+                        BIPUSH 0x1
+                        ISTORE c3
+                        GOTO controlla_fine
+                rc_c2_pl1:
+                    POP
+                    ILOAD c2
+                    IFEQ is_free_rc_c2_pl1
+                    GOTO stampa_ui
+                    is_free_rc_c2_pl1:
+                        BIPUSH 0x1
+                        ISTORE c2
+                        GOTO controlla_fine
+                rc_c1_pl1:
+                    POP
+                    ILOAD c1
+                    IFEQ is_free_rc_c1_pl1
+                    GOTO stampa_ui
+                    is_free_rc_c1_pl1:
+                        BIPUSH 0x1
+                        ISTORE c1
+                        GOTO controlla_fine
+            row_b_pl1:
+                POP
+                ILOAD x_pl1
+                DUP
+                IFEQ rc_b1_pl1
+                BIPUSH 0x1
+                IF_ICMPEQ rc_b2_pl1
+                rc_b3_pl1:
+                    ILOAD b3
+                    IFEQ is_free_rc_b3_pl1
+                    GOTO stampa_ui
+                    is_free_rc_b3_pl1:
+                        BIPUSH 0x1
+                        ISTORE b3
+                        GOTO controlla_fine
+                rc_b2_pl1:
+                    POP
+                    ILOAD b2
+                    IFEQ is_free_rc_b2_pl1
+                    GOTO stampa_ui
+                    is_free_rc_b2_pl1:
+                        BIPUSH 0x1
+                        ISTORE b2
+                        GOTO controlla_fine
+                rc_b1_pl1:
+                    POP
+                    ILOAD b1
+                    IFEQ is_free_rc_b1_pl1
+                    GOTO stampa_ui
+                    is_free_rc_b1_pl1:
+                        BIPUSH 0x1
+                        ISTORE b1
+                        GOTO controlla_fine
+            row_a_pl1:
+                POP
+                ILOAD x_pl1
+                DUP
+                IFEQ rc_a1_pl1
+                BIPUSH 0x1
+                IF_ICMPEQ rc_a2_pl1
+                rc_a3_pl1:
+                    ILOAD a3
+                    IFEQ is_free_rc_a3_pl1
+                    GOTO stampa_ui
+                    is_free_rc_a3_pl1:
+                        BIPUSH 0x1
+                        ISTORE a3
+                        GOTO controlla_fine
+                rc_a2_pl1:
+                    POP
+                    ILOAD a2
+                    IFEQ is_free_rc_a2_pl1
+                    GOTO stampa_ui
+                    is_free_rc_a2_pl1:
+                        BIPUSH 0x1
+                        ISTORE a2
+                        GOTO controlla_fine
+                rc_a1_pl1:
+                    POP
+                    ILOAD a1
+                    IFEQ is_free_rc_a1_pl1
+                    GOTO stampa_ui
+                    is_free_rc_a1_pl1:
+                        BIPUSH 0x1
+                        ISTORE a1
+                        GOTO controlla_fine
+            //prima devo controllare se è libero
+
+    //controllo
+controlla_fine:
+    //se arrivo qui ho già piazzato la pedina
+    IINC libere -1
+    //controllo prima se qualcuno ha vinto
+    //poi se ci sono caselle libere
+    //riga 1
+        ILOAD a1
+        ILOAD a2
+        ILOAD a3
+        IAND
+        IAND
+        DUP
+        BIPUSH 0x1
+        IF_ICMPEQ player1_win
+        BIPUSH 0x2
+        IF_ICMPEQ player2_win
+    //riga2
+        ILOAD b1
+        ILOAD b2
+        ILOAD b3
+        IAND
+        IAND
+        DUP
+        BIPUSH 0x1
+        IF_ICMPEQ player1_win
+        BIPUSH 0x2
+        IF_ICMPEQ player2_win
+    //riga3
+        ILOAD c1
+        ILOAD c2
+        ILOAD c3
+        IAND
+        IAND
+        DUP
+        BIPUSH 0x1
+        IF_ICMPEQ player1_win
+        BIPUSH 0x2
+        IF_ICMPEQ player2_win
+    //colonna1
+        ILOAD a1
+        ILOAD b1
+        ILOAD c1
+        IAND
+        IAND
+        DUP
+        BIPUSH 0x1
+        IF_ICMPEQ player1_win
+        BIPUSH 0x2
+        IF_ICMPEQ player2_win
+    //colonna2
+        ILOAD a2
+        ILOAD b2
+        ILOAD c2
+        IAND
+        IAND
+        DUP
+        BIPUSH 0x1
+        IF_ICMPEQ player1_win
+        BIPUSH 0x2
+        IF_ICMPEQ player2_win
+    //colonna3
+        ILOAD a3
+        ILOAD b3
+        ILOAD c3
+        IAND
+        IAND
+        DUP
+        BIPUSH 0x1
+        IF_ICMPEQ player1_win
+        BIPUSH 0x2
+        IF_ICMPEQ player2_win
+    //diag1
+        ILOAD a1
+        ILOAD b2
+        ILOAD c3
+        IAND
+        IAND
+        DUP
+        BIPUSH 0x1
+        IF_ICMPEQ player1_win
+        BIPUSH 0x2
+        IF_ICMPEQ player2_win
+    //diag2
+        ILOAD a3
+        ILOAD b2
+        ILOAD c1
+        IAND
+        IAND
+        DUP
+        BIPUSH 0x1
+        IF_ICMPEQ player1_win
+        BIPUSH 0x2
+        IF_ICMPEQ player2_win
+    //fine spazio
+    ILOAD libere
+    IFEQ tie
+    GOTO loop
+
+no_in:
+    POP
+    GOTO muovi_player
+
+player1_win:
+    BIPUSH 0x1
+    INVOKEVIRTUAL win
+    GOTO fine
+
+player2_win:
+    BIPUSH 0x2
+    INVOKEVIRTUAL win
+    GOTO fine
+
+tie:
+    INVOKEVIRTUAL end_tie
+    OUT
+fine:
+    HALT
+.end-main
+
+.method end_tie()
+    BIPUSH 0x0A
+    OUT
+    BIPUSH 't'
+    OUT
+    BIPUSH 'i'
+    OUT
+    BIPUSH 'e'
+    OUT
+.end-method
+
+.method win(pl)
+    BIPUSH 0x0A
+    OUT
+    BIPUSH 'p'
+    OUT
+    BIPUSH 'l'
+    OUT
+    BIPUSH 'a'
+    OUT
+    BIPUSH 'y'
+    OUT
+    BIPUSH 'e'
+    OUT
+    BIPUSH 'r'
+    OUT
+    BIPUSH 0x20
+    OUT
+    ILOAD pl
+    BIPUSH 0x1
+    IF_ICMPEQ player1_w
+    player2_w:
+        BIPUSH '2'
+        OUT
+        GOTO dopo
+    player1_w:
+        BIPUSH '1'
+        OUT
+    dopo:
+    BIPUSH 0x20
+    OUT
+    BIPUSH 'h'
+    OUT
+    BIPUSH 'a'
+    OUT
+    BIPUSH 's'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 'w'
+    OUT
+    BIPUSH 'o'
+    OUT
+    BIPUSH 'n'
+    OUT
+    BIPUSH '!'
+    OUT
+    
+.end-method
+
+.method print_line()
+    BIPUSH 0x20
+    OUT
+    BIPUSH 0x2D //-
+    DUP
+    DUP
+    DUP
+    DUP
+    DUP
+    DUP
+    DUP
+    DUP
+    DUP
+    DUP
+    OUT
+    OUT
+    OUT
+    OUT
+    OUT
+    OUT
+    OUT
+    OUT
+    OUT
+    OUT
+    OUT
+    BIPUSH 0x0A
+    OUT
+    IRETURN
+.end-method
+
+.method print_placeholder(pl)
+    BIPUSH 0x20
+    OUT
+    ILOAD pl
+    DUP
+    IFEQ noplayer
+    BIPUSH 0x1
+    IF_ICMPEQ yesplayerone
+    BIPUSH 'o'
+    OUT
+    GOTO return_print_placeholder
+    yesplayerone:
+        BIPUSH 'x'
+        OUT
+        GOTO return_print_placeholder
+    noplayer:
+        BIPUSH 0x20
+        OUT
+    return_print_placeholder:
+        BIPUSH 0x20
+        OUT
+        IRETURN
+.end-method
+
+.method print_col_arrow(col_pos)
+    BIPUSH 0x20
+    DUP
+    OUT
+    OUT
+    ILOAD col_pos
+    DUP
+    IFEQ y_here
+        BIPUSH 0x20
+        DUP
+        DUP
+        DUP
+        OUT
+        OUT
+        OUT
+        OUT
+    BIPUSH 0x1
+    IF_ICMPEQ y_here
+        BIPUSH 0x20
+        DUP
+        DUP
+        DUP
+        OUT
+        OUT
+        OUT
+        OUT
+    y_here:
+        BIPUSH 0X5E
+        OUT    
+    return_p_y_a:
+        BIPUSH 0X0A
+        OUT
+        IRETURN
+.end-method
+
+.method print_row_arrow(row_pos,print_pos)
+    ILOAD row_pos
+    ILOAD print_pos
+    IF_ICMPEQ yes_arrow
+    BIPUSH 0x20
+    OUT
+    GOTO return_print_x_arrow
+    yes_arrow:
+        BIPUSH 0x3E //>
+        OUT
+    return_print_x_arrow:
+        IRETURN
+.end-method
+
+.method print_round(pl)
+    BIPUSH 0x0A
+    OUT
+    BIPUSH 0x0A
+    OUT
+    BIPUSH 0x0A
+    OUT
+    BIPUSH 0x0A
+    OUT
+    BIPUSH 'R'
+    OUT
+    BIPUSH 'o'
+    OUT
+    BIPUSH 'u'
+    OUT
+    BIPUSH 'n'
+    OUT
+    BIPUSH 'd'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 'p'
+    OUT
+    BIPUSH 'l'
+    OUT
+    BIPUSH 'a'
+    OUT
+    BIPUSH 'y'
+    OUT
+    BIPUSH 'e'
+    OUT
+    BIPUSH 'r'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 'n'
+    OUT
+    BIPUSH 0x20
+    OUT
+    ILOAD pl
+    BIPUSH 0x2
+    IF_ICMPEQ p_r_pl2
+    p_r_pl1:
+        BIPUSH '1'
+        OUT
+        BIPUSH 0x20
+        OUT
+        BIPUSH 0x28
+        OUT
+        BIPUSH 'x'
+        OUT
+        BIPUSH 0x29
+        OUT
+        GOTO p_r_end
+    p_r_pl2:
+        BIPUSH '2'
+        OUT
+        BIPUSH 0x20
+        OUT
+        BIPUSH 0x28
+        OUT
+        BIPUSH 'o'
+        OUT
+        BIPUSH 0x29
+        OUT
+    p_r_end:
+    BIPUSH 0X0A //LF
+    OUT
+    IRETURN
+.end-method
+
+.method hello_player()
+    //NB: non serve per forza scrivere in ascii
+    //basta 'lettera'
+    BIPUSH 0x48 //H
+    OUT
+    BIPUSH 0x69 //i
+    OUT
+    BIPUSH 0x2c //,
+    OUT
+    BIPUSH 0x20 //space
+    OUT
+    BIPUSH 0x57 //W
+    OUT
+    BIPUSH 0x65//e
+    OUT
+    BIPUSH 0x6C//l
+    OUT
+    BIPUSH 0x63//c
+    OUT
+    BIPUSH 0x6f//o
+    OUT
+    BIPUSH 0x6D
+    OUT
+    BIPUSH 0x65
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 0x74 //t
+    OUT
+    BIPUSH 0x6F //o
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 0x74//t
+    OUT
+    BIPUSH 0x69//i
+    OUT
+    BIPUSH 0x63//c
+    OUT
+    BIPUSH 0x2D//-
+    OUT
+    BIPUSH 0x74//t
+    OUT
+    BIPUSH 0x61//a
+    OUT
+    BIPUSH 0x63//c
+    OUT
+    BIPUSH 0x2D
+    OUT
+    BIPUSH 0x74
+    OUT
+    BIPUSH 0x6F
+    OUT
+    BIPUSH 0x65
+    OUT
+    BIPUSH 0x0A//line feed
+    OUT
+    BIPUSH 0x55//U
+    OUT
+    BIPUSH 0x73//s
+    OUT
+    BIPUSH 0x65//e
+    OUT
+    BIPUSH 0x20//
+    OUT
+    BIPUSH 'w'//
+    OUT
+    BIPUSH 'a'//
+    OUT
+    BIPUSH 's'//
+    OUT
+    BIPUSH 'd'//
+    OUT
+    BIPUSH 0x20//
+    OUT
+    BIPUSH 0x74//t
+    OUT
+    BIPUSH 0x6F//o
+    OUT
+    BIPUSH 0x20//
+    OUT
+    BIPUSH 0x6d//
+    OUT
+    BIPUSH 0x6f//
+    OUT
+    BIPUSH 0x76//
+    OUT
+    BIPUSH 0x65//
+    OUT
+    BIPUSH 0x0A//line feed
+    OUT
+    //p to place mark
+    BIPUSH 'p'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 't'
+    OUT
+    BIPUSH 'o'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 'p'
+    OUT
+    BIPUSH 'l'
+    OUT
+    BIPUSH 'a'
+    OUT
+    BIPUSH 'c'
+    OUT
+    BIPUSH 'e'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 'm'
+    OUT
+    BIPUSH 'a'
+    OUT
+    BIPUSH 'r'
+    OUT
+    BIPUSH 'k'
+    OUT
+    BIPUSH 0x0A
+    OUT
+    //press a key to start
+    BIPUSH 'p'
+    OUT
+    BIPUSH 'r'
+    OUT
+    BIPUSH 'e'
+    OUT
+    BIPUSH 's'
+    OUT
+    BIPUSH 's'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 'a'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 'k'
+    OUT
+    BIPUSH 'e'
+    OUT
+    BIPUSH 'y'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 't'
+    OUT
+    BIPUSH 'o'
+    OUT
+    BIPUSH 0x20
+    OUT
+    BIPUSH 's'
+    OUT
+    BIPUSH 't'
+    OUT
+    BIPUSH 'a'
+    OUT
+    BIPUSH 'r'
+    OUT
+    BIPUSH 't'
+    OUT
+    
+    L1:   
+        IN        
+        DUP 
+        BIPUSH 0x0
+        IF_ICMPEQ L2
+        GOTO return_hello_player      
+    L2:   
+        POP 
+        GOTO L1     
+
+    return_hello_player:
+        POP
+        IRETURN
+.end-method
