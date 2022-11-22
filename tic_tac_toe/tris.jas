@@ -673,7 +673,7 @@ fine:
     OUT
     BIPUSH '!'
     OUT
-    
+    IRETURN
 .end-method
 
 .method print_line()
